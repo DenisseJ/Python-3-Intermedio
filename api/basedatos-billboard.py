@@ -22,13 +22,14 @@ class Datos(BaseModel):
 app = FastAPI()
 
 @app.post("/agregar/")
-async def agregar_datos(datos :Datos):
+async def agregar_datos(datos : Datos):
     conn = sqlite3.connect("billboard100.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO usuarios (titulo, artista, posicion) VALUES (?, ?,?)", (datos.titulo,datos.artista,datos.posicion) )
+    cursor.execute("INSERT INTO datos (titulo, artista, posicion) VALUES (?, ?, ?)", (datos.titulo,datos.artista,datos.posicion))
     conn.commit()
     conn.close()
     return{ "mensaje" : "Datos agregados exitosamente"}
+    
 
 @app.get("/datos/")
 async def obtener_todos_datos():
@@ -38,36 +39,37 @@ async def obtener_todos_datos():
     resultados = cursor.fetchall()
     conn.close()
     if resultados:
-        return[{ "titulo" : resultados[1],"artista":resultados[2],"posicion":resultados[3]} for resultado in resultados]
+        return[{"id" : resultado[0],"titulo" : resultado[1],"artista":resultado[2],"posicion":resultado[3]} for resultado in resultados]
     else:
         return{ "mensaje" : "No hay datos en la base de datos"}
-    
+
 @app.get("/consultar/{id}/")
-async def consultar_datos():
+async def consultar_datos(id: int):
     conn = sqlite3.connect("billboard100.db")
     cursor = conn.cursor()
     cursor.execute("SELECT titulo, artista, posicion FROM datos WHERE id=?",(id,) ) #Coma necesario para mandar dupla
-    resultados = cursor.fetchone()
+    resultado = cursor.fetchone()
     conn.close()
-    if resultados:
-        return[{ "titulo" : resultados[0],"artista":resultados[1],"posicion":resultados[2]} for resultado in resultados]
+    if resultado:
+        return{"titulo" : resultado[0],"artista":resultado[1],"posicion":resultado[2]} 
     else:
         return{ "mensaje" : "Datos no encontrados"}
 
-@app.put("/actualizar/{id_value}")
+
+@app.put("/actualizar/{id}")
 async def actualizar_datos(id:int,datos :Datos):
     conn = sqlite3.connect("billboard100.db")
     cursor = conn.cursor()
-    cursor.execute("UPDATE datos SET titulo=?,artista=?,posicion=? WHERE id=?)", (datos.titulo,datos.artista,datos.posicion,id) )
+    cursor.execute("UPDATE datos SET titulo=?, artista=?, posicion=? WHERE id=?", (datos.titulo,datos.artista,datos.posicion,id) )
     conn.commit()
     conn.close()
     return{ "mensaje" : "Datos actualizados exitosamente"}
 
-@app.delete("/eliminar/{id_value}")
-async def eliminar_datos(id :int):
+@app.delete("/eliminar/{id}")
+async def eliminar_datos(id : int):
     conn = sqlite3.connect("billboard100.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM datos WHERE id=?", (id) )
+    cursor.execute("DELETE FROM datos WHERE id=?", (id,) )
     conn.commit()
     conn.close()
     return{ "mensaje" : "Datos eliminados exitosamente"}

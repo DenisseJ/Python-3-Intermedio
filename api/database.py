@@ -25,7 +25,7 @@ async def mostrar_libro(id:int):
     return {"data" :id}
 
 @app.post("/libros/") 
-async def insertar_libro(libro:Libro): 
+async def insertar_libro(libro: Libro): 
     return {"message" : f"Libro: {libro.titulo} insertado correctamente"}
 """
 @app.get("/items/{item_id}/{m}")
